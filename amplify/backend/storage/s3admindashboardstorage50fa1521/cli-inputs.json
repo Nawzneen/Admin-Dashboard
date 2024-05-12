@@ -1,0 +1,14 @@
+{
+  "resourceName": "s3admindashboardstorage50fa1521",
+  "bucketName": "admin-dashboard-storage-50fa1521",
+  "policyUUID": "a4ab8554",
+  "storageAccess": "authAndGuest",
+  "guestAccess": [
+    "READ"
+  ],
+  "authAccess": [
+    "READ",
+    "CREATE_AND_UPDATE",
+    "DELETE"
+  ]
+}

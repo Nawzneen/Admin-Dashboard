@@ -1,0 +1,23 @@
+{
+  "staging": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-admindashboard-staging-8bac6-authRole",
+      "UnauthRoleArn": "arn:aws:iam::891377022355:role/amplify-admindashboard-staging-8bac6-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::891377022355:role/amplify-admindashboard-staging-8bac6-authRole",
+      "Region": "eu-central-1",
+      "DeploymentBucketName": "amplify-admindashboard-staging-8bac6-deployment",
+      "UnauthRoleName": "amplify-admindashboard-staging-8bac6-unauthRole",
+      "StackName": "amplify-admindashboard-staging-8bac6",
+      "StackId": "arn:aws:cloudformation:eu-central-1:891377022355:stack/amplify-admindashboard-staging-8bac6/8546c340-1075-11ef-97ed-066e47767b8d",
+      "AmplifyAppId": "d3l8dqv06lviuw"
+    },
+    "categories": {
+      "auth": {
+        "AdminDashboard": {}
+      },
+      "storage": {
+        "s3admindashboardstorage50fa1521": {}
+      }
+    }
+  }
+}
