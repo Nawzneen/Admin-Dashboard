@@ -13,16 +13,35 @@ export default function Layout({
       label: "Overview",
       active: pathname === "/",
     },
+    {
+      href: "/genres",
+      label: "Genres",
+      active: pathname === "/genres",
+    },
+    {
+      href: "/platforms",
+      label: "Platforms",
+      active: pathname === "/platforms",
+    },
+    {
+      href: "/products",
+      label: "Products",
+      active: pathname === "/products",
+    },
   ];
   return (
     <>
-      <Flex justifyContent="center" alignItems="center" marginBottom="1rem">
+      <Flex justifyContent="space-between" alignItems="center" margin="1rem">
         <nav
           className="navbar navbar-expand-lg navbar-light bg-light"
           {...props}
         >
           {routes.map((route) => (
-            <Link key={route.href} href={route.href}>
+            <Link
+              key={route.href}
+              href={route.href}
+              style={{ padding: "16px" }}
+            >
               {/* className={'text-sm font-medium transition-colors hover:text-primary-500'} 
         {`${route.active ? 'text-primary-500' : 'text-gray-900'}`}> */}
               {route.label}
