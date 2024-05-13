@@ -15,9 +15,12 @@ type Genre @model @auth(rules: [{allow: public}]) {
 type Product @model @auth(rules: [{allow: public}]) {
   id: ID!
   name: String
-  isSold: String
+  isSold: Boolean
   price: Float
   image: String
   platformID: ID! @index(name: "byPlatform")
   genreID: ID! @index(name: "byGenre")
+  Platform: Platform @belongsTo(fields: ["platformID"])
+  Genre: Genre @belongsTo(fields: ["genreID"])
 }
+ 
