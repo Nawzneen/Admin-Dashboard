@@ -218,6 +218,30 @@ export const createProduct = /* GraphQL */ `mutation CreateProduct(
     image
     platformID
     genreID
+    Platform {
+      id
+      name
+      value
+      Products {
+        nextToken
+        __typename
+      }
+      createdAt
+      updatedAt
+      __typename
+    }
+    Genre {
+      id
+      name
+      value
+      Products {
+        nextToken
+        __typename
+      }
+      createdAt
+      updatedAt
+      __typename
+    }
     createdAt
     updatedAt
     __typename
@@ -239,6 +263,30 @@ export const updateProduct = /* GraphQL */ `mutation UpdateProduct(
     image
     platformID
     genreID
+    Platform {
+      id
+      name
+      value
+      Products {
+        nextToken
+        __typename
+      }
+      createdAt
+      updatedAt
+      __typename
+    }
+    Genre {
+      id
+      name
+      value
+      Products {
+        nextToken
+        __typename
+      }
+      createdAt
+      updatedAt
+      __typename
+    }
     createdAt
     updatedAt
     __typename
@@ -260,6 +308,30 @@ export const deleteProduct = /* GraphQL */ `mutation DeleteProduct(
     image
     platformID
     genreID
+    Platform {
+      id
+      name
+      value
+      Products {
+        nextToken
+        __typename
+      }
+      createdAt
+      updatedAt
+      __typename
+    }
+    Genre {
+      id
+      name
+      value
+      Products {
+        nextToken
+        __typename
+      }
+      createdAt
+      updatedAt
+      __typename
+    }
     createdAt
     updatedAt
     __typename
