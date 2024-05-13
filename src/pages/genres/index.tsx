@@ -11,30 +11,39 @@ import ItemsTable from "@/components/items-table";
 export default function Genre() {
   const client = generateClient();
   const router = useRouter();
-  const [genre, setGenre] = React.useState<TableValues[]>();
+  const [genres, setGenres] = React.useState<TableValues[]>();
   useEffect(() => {
     async function grabGenres() {
       const allGenres = await client.graphql<GraphQLQuery<ListGenresQuery>>({
         query: queries.listGenres,
       });
-      setGenre(allGenres.data?.listGenres?.items as TableValues[]);
+      setGenres(allGenres.data?.listGenres?.items as TableValues[]);
     }
     grabGenres();
   }, []);
   return (
-    <Flex
-      direction="row"
-      justifyContent="space-between"
-      alignItems="center"
-      className="underline"
-    >
-      <Heading level={1}>Genres</Heading>
-      <Button variation="primary" onClick={() => router.push("/genres/new")}>
-        Create Genre
-      </Button>
-      {genre === undefined ? null : (
-        <ItemsTable tableName="Genres" data={genre}></ItemsTable>
-      )}
-    </Flex>
+    <>
+      <Flex
+        direction="row"
+        justifyContent="space-between"
+        alignItems="center"
+        className=""
+      >
+        <Heading level={1}>Genres</Heading>
+        <Button variation="primary" onClick={() => router.push("/genres/new")}>
+          Create Genre
+        </Button>
+      </Flex>
+      <Flex
+        direction="row"
+        justifyContent="space-between"
+        alignItems="center"
+        className=" mt-4"
+      >
+        {genres === undefined ? null : (
+          <ItemsTable tableName="Genres" data={genres}></ItemsTable>
+        )}
+      </Flex>
+    </>
   );
 }
