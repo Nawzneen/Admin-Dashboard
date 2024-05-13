@@ -197,6 +197,30 @@ export const onCreateProduct = /* GraphQL */ `subscription OnCreateProduct($filt
     image
     platformID
     genreID
+    Platform {
+      id
+      name
+      value
+      Products {
+        nextToken
+        __typename
+      }
+      createdAt
+      updatedAt
+      __typename
+    }
+    Genre {
+      id
+      name
+      value
+      Products {
+        nextToken
+        __typename
+      }
+      createdAt
+      updatedAt
+      __typename
+    }
     createdAt
     updatedAt
     __typename
@@ -215,6 +239,30 @@ export const onUpdateProduct = /* GraphQL */ `subscription OnUpdateProduct($filt
     image
     platformID
     genreID
+    Platform {
+      id
+      name
+      value
+      Products {
+        nextToken
+        __typename
+      }
+      createdAt
+      updatedAt
+      __typename
+    }
+    Genre {
+      id
+      name
+      value
+      Products {
+        nextToken
+        __typename
+      }
+      createdAt
+      updatedAt
+      __typename
+    }
     createdAt
     updatedAt
     __typename
@@ -233,6 +281,30 @@ export const onDeleteProduct = /* GraphQL */ `subscription OnDeleteProduct($filt
     image
     platformID
     genreID
+    Platform {
+      id
+      name
+      value
+      Products {
+        nextToken
+        __typename
+      }
+      createdAt
+      updatedAt
+      __typename
+    }
+    Genre {
+      id
+      name
+      value
+      Products {
+        nextToken
+        __typename
+      }
+      createdAt
+      updatedAt
+      __typename
+    }
     createdAt
     updatedAt
     __typename

@@ -126,6 +126,30 @@ export const getProduct = /* GraphQL */ `query GetProduct($id: ID!) {
     image
     platformID
     genreID
+    Platform {
+      id
+      name
+      value
+      Products {
+        nextToken
+        __typename
+      }
+      createdAt
+      updatedAt
+      __typename
+    }
+    Genre {
+      id
+      name
+      value
+      Products {
+        nextToken
+        __typename
+      }
+      createdAt
+      updatedAt
+      __typename
+    }
     createdAt
     updatedAt
     __typename
@@ -149,6 +173,22 @@ export const listProducts = /* GraphQL */ `query ListProducts(
       image
       platformID
       genreID
+      Platform {
+        id
+        name
+        value
+        createdAt
+        updatedAt
+        __typename
+      }
+      Genre {
+        id
+        name
+        value
+        createdAt
+        updatedAt
+        __typename
+      }
       createdAt
       updatedAt
       __typename
@@ -183,6 +223,22 @@ export const productsByPlatformID = /* GraphQL */ `query ProductsByPlatformID(
       image
       platformID
       genreID
+      Platform {
+        id
+        name
+        value
+        createdAt
+        updatedAt
+        __typename
+      }
+      Genre {
+        id
+        name
+        value
+        createdAt
+        updatedAt
+        __typename
+      }
       createdAt
       updatedAt
       __typename
@@ -217,6 +273,22 @@ export const productsByGenreID = /* GraphQL */ `query ProductsByGenreID(
       image
       platformID
       genreID
+      Platform {
+        id
+        name
+        value
+        createdAt
+        updatedAt
+        __typename
+      }
+      Genre {
+        id
+        name
+        value
+        createdAt
+        updatedAt
+        __typename
+      }
       createdAt
       updatedAt
       __typename
