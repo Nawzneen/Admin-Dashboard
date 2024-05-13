@@ -7,6 +7,7 @@ import { GraphQLQuery } from "@aws-amplify/api";
 import { ListGenresQuery } from "@/API";
 // import { API } from "aws-amplify"; / No longer supported
 import { generateClient } from "aws-amplify/api";
+import ItemsTable from "@/components/items-table";
 export default function Genre() {
   const client = generateClient();
   const router = useRouter();
@@ -31,6 +32,9 @@ export default function Genre() {
       <Button variation="primary" onClick={() => router.push("/genres/new")}>
         Create Genre
       </Button>
+      {genre === undefined ? null : (
+        <ItemsTable tableName="Genres" data={genre}></ItemsTable>
+      )}
     </Flex>
   );
 }
