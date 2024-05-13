@@ -8,9 +8,9 @@ import {
 } from "@aws-amplify/ui-react";
 import { StorageImage } from "@aws-amplify/ui-react-storage";
 interface ProductsTableProps {
-  products: Product[];
+  data: Product[];
 }
-export default function ProductsTable({ products }: ProductsTableProps) {
+export default function ProductsTable({ data }: ProductsTableProps) {
   return (
     <Table>
       <TableHead>
@@ -24,7 +24,7 @@ export default function ProductsTable({ products }: ProductsTableProps) {
         </TableRow>
       </TableHead>
       <TableBody>
-        {products.map((product, key) => (
+        {data.map((product, key) => (
           <TableRow key={key}>
             <TableCell>
               {product.image === null || product?.image === undefined ? null : (
