@@ -5,8 +5,8 @@
  **************************************************************************/
 
 import * as React from "react";
-import { AutocompleteProps, GridProps, TextFieldProps } from "@aws-amplify/ui-react";
-import { Genre, Product } from "../API.ts";
+import { GridProps, TextFieldProps } from "@aws-amplify/ui-react";
+import { Genre } from "../API.ts";
 export declare type EscapeHatchProps = {
     [elementHierarchy: string]: Record<string, unknown>;
 } | null;
@@ -25,19 +25,16 @@ export declare type ValidationFunction<T> = (value: T, validationResponse: Valid
 export declare type GenreUpdateFormInputValues = {
     name?: string;
     value?: string;
-    Products?: Product[];
 };
 export declare type GenreUpdateFormValidationValues = {
     name?: ValidationFunction<string>;
     value?: ValidationFunction<string>;
-    Products?: ValidationFunction<Product>;
 };
 export declare type PrimitiveOverrideProps<T> = Partial<T> & React.DOMAttributes<HTMLDivElement>;
 export declare type GenreUpdateFormOverridesProps = {
     GenreUpdateFormGrid?: PrimitiveOverrideProps<GridProps>;
     name?: PrimitiveOverrideProps<TextFieldProps>;
     value?: PrimitiveOverrideProps<TextFieldProps>;
-    Products?: PrimitiveOverrideProps<AutocompleteProps>;
 } & EscapeHatchProps;
 export declare type GenreUpdateFormProps = React.PropsWithChildren<{
     overrides?: GenreUpdateFormOverridesProps | undefined | null;

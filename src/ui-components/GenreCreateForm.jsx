@@ -352,7 +352,6 @@ export default function GenreCreateForm(props) {
                   variables: {
                     input: {
                       id: original.id,
-                      genreID: genre.id,
                     },
                   },
                 })
@@ -469,12 +468,10 @@ export default function GenreCreateForm(props) {
           isReadOnly={false}
           placeholder="Search Product"
           value={currentProductsDisplayValue}
-          options={productsRecords
-            .filter((r) => !ProductsIdSet.has(getIDValue.Products?.(r)))
-            .map((r) => ({
-              id: getIDValue.Products?.(r),
-              label: getDisplayValue.Products?.(r),
-            }))}
+          options={productsRecords.map((r) => ({
+            id: getIDValue.Products?.(r),
+            label: getDisplayValue.Products?.(r),
+          }))}
           isLoading={ProductsLoading}
           onSelect={({ id, label }) => {
             setCurrentProductsValue(
