@@ -5,7 +5,9 @@
  **************************************************************************/
 
 import * as React from "react";
-import { AutocompleteProps, GridProps, TextFieldProps } from "@aws-amplify/ui-react";
+import { AutocompleteProps, GridProps, SwitchFieldProps, TextFieldProps } from "@aws-amplify/ui-react";
+import { StorageManagerProps } from "@aws-amplify/ui-react-storage";
+import { Genre, Platform } from "../API.ts";
 export declare type EscapeHatchProps = {
     [elementHierarchy: string]: Record<string, unknown>;
 } | null;
@@ -23,29 +25,29 @@ export declare type ValidationResponse = {
 export declare type ValidationFunction<T> = (value: T, validationResponse: ValidationResponse) => ValidationResponse | Promise<ValidationResponse>;
 export declare type ProductCreateFormInputValues = {
     name?: string;
-    isSold?: string;
+    isSold?: boolean;
     price?: number;
     image?: string;
-    platformID?: string;
-    genreID?: string;
+    Platform?: Platform;
+    Genre?: Genre;
 };
 export declare type ProductCreateFormValidationValues = {
     name?: ValidationFunction<string>;
-    isSold?: ValidationFunction<string>;
+    isSold?: ValidationFunction<boolean>;
     price?: ValidationFunction<number>;
     image?: ValidationFunction<string>;
-    platformID?: ValidationFunction<string>;
-    genreID?: ValidationFunction<string>;
+    Platform?: ValidationFunction<Platform>;
+    Genre?: ValidationFunction<Genre>;
 };
 export declare type PrimitiveOverrideProps<T> = Partial<T> & React.DOMAttributes<HTMLDivElement>;
 export declare type ProductCreateFormOverridesProps = {
     ProductCreateFormGrid?: PrimitiveOverrideProps<GridProps>;
     name?: PrimitiveOverrideProps<TextFieldProps>;
-    isSold?: PrimitiveOverrideProps<TextFieldProps>;
+    isSold?: PrimitiveOverrideProps<SwitchFieldProps>;
     price?: PrimitiveOverrideProps<TextFieldProps>;
-    image?: PrimitiveOverrideProps<TextFieldProps>;
-    platformID?: PrimitiveOverrideProps<AutocompleteProps>;
-    genreID?: PrimitiveOverrideProps<AutocompleteProps>;
+    image?: PrimitiveOverrideProps<StorageManagerProps>;
+    Platform?: PrimitiveOverrideProps<AutocompleteProps>;
+    Genre?: PrimitiveOverrideProps<AutocompleteProps>;
 } & EscapeHatchProps;
 export declare type ProductCreateFormProps = React.PropsWithChildren<{
     overrides?: ProductCreateFormOverridesProps | undefined | null;

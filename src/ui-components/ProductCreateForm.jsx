@@ -15,14 +15,22 @@ import {
   Grid,
   Icon,
   ScrollView,
+  SwitchField,
   Text,
   TextField,
   useTheme,
 } from "@aws-amplify/ui-react";
-import { fetchByPath, getOverrideProps, validateField } from "./utils";
+import { StorageManager } from "@aws-amplify/ui-react-storage";
+import {
+  fetchByPath,
+  getOverrideProps,
+  processFile,
+  validateField,
+} from "./utils";
 import { generateClient } from "aws-amplify/api";
 import { listGenres, listPlatforms } from "../graphql/queries";
 import { createProduct } from "../graphql/mutations";
+import { Field } from "@aws-amplify/ui-react/internal";
 const client = generateClient();
 function ArrayField({
   items = [],
@@ -192,27 +200,22 @@ export default function ProductCreateForm(props) {
   } = props;
   const initialValues = {
     name: "",
-    isSold: "",
+    isSold: false,
     price: "",
-    image: "",
-    platformID: undefined,
-    genreID: undefined,
+    image: undefined,
+    Platform: undefined,
+    Genre: undefined,
   };
   const [name, setName] = React.useState(initialValues.name);
   const [isSold, setIsSold] = React.useState(initialValues.isSold);
   const [price, setPrice] = React.useState(initialValues.price);
   const [image, setImage] = React.useState(initialValues.image);
-  const [platformID, setPlatformID] = React.useState(initialValues.platformID);
-  const [platformIDLoading, setPlatformIDLoading] = React.useState(false);
-  const [platformIDRecords, setPlatformIDRecords] = React.useState([]);
-  const [selectedPlatformIDRecords, setSelectedPlatformIDRecords] =
-    React.useState([]);
-  const [genreID, setGenreID] = React.useState(initialValues.genreID);
-  const [genreIDLoading, setGenreIDLoading] = React.useState(false);
-  const [genreIDRecords, setGenreIDRecords] = React.useState([]);
-  const [selectedGenreIDRecords, setSelectedGenreIDRecords] = React.useState(
-    []
-  );
+  const [Platform, setPlatform] = React.useState(initialValues.Platform);
+  const [PlatformLoading, setPlatformLoading] = React.useState(false);
+  const [platformRecords, setPlatformRecords] = React.useState([]);
+  const [Genre, setGenre] = React.useState(initialValues.Genre);
+  const [GenreLoading, setGenreLoading] = React.useState(false);
+  const [genreRecords, setGenreRecords] = React.useState([]);
   const autocompleteLength = 10;
   const [errors, setErrors] = React.useState({});
   const resetStateValues = () => {
@@ -220,35 +223,48 @@ export default function ProductCreateForm(props) {
     setIsSold(initialValues.isSold);
     setPrice(initialValues.price);
     setImage(initialValues.image);
-    setPlatformID(initialValues.platformID);
-    setCurrentPlatformIDValue(undefined);
-    setCurrentPlatformIDDisplayValue("");
-    setGenreID(initialValues.genreID);
-    setCurrentGenreIDValue(undefined);
-    setCurrentGenreIDDisplayValue("");
+    setPlatform(initialValues.Platform);
+    setCurrentPlatformValue(undefined);
+    setCurrentPlatformDisplayValue("");
+    setGenre(initialValues.Genre);
+    setCurrentGenreValue(undefined);
+    setCurrentGenreDisplayValue("");
     setErrors({});
   };
-  const [currentPlatformIDDisplayValue, setCurrentPlatformIDDisplayValue] =
+  const [currentPlatformDisplayValue, setCurrentPlatformDisplayValue] =
     React.useState("");
-  const [currentPlatformIDValue, setCurrentPlatformIDValue] =
+  const [currentPlatformValue, setCurrentPlatformValue] =
     React.useState(undefined);
-  const platformIDRef = React.createRef();
-  const [currentGenreIDDisplayValue, setCurrentGenreIDDisplayValue] =
+  const PlatformRef = React.createRef();
+  const [currentGenreDisplayValue, setCurrentGenreDisplayValue] =
     React.useState("");
-  const [currentGenreIDValue, setCurrentGenreIDValue] =
-    React.useState(undefined);
-  const genreIDRef = React.createRef();
+  const [currentGenreValue, setCurrentGenreValue] = React.useState(undefined);
+  const GenreRef = React.createRef();
+  const getIDValue = {
+    Platform: (r) => JSON.stringify({ id: r?.id }),
+    Genre: (r) => JSON.stringify({ id: r?.id }),
+  };
+  const PlatformIdSet = new Set(
+    Array.isArray(Platform)
+      ? Platform.map((r) => getIDValue.Platform?.(r))
+      : getIDValue.Platform?.(Platform)
+  );
+  const GenreIdSet = new Set(
+    Array.isArray(Genre)
+      ? Genre.map((r) => getIDValue.Genre?.(r))
+      : getIDValue.Genre?.(Genre)
+  );
   const getDisplayValue = {
-    platformID: (r) => `${r?.name ? r?.name + " - " : ""}${r?.id}`,
-    genreID: (r) => `${r?.name ? r?.name + " - " : ""}${r?.id}`,
+    Platform: (r) => `${r?.name ? r?.name + " - " : ""}${r?.id}`,
+    Genre: (r) => `${r?.name ? r?.name + " - " : ""}${r?.id}`,
   };
   const validations = {
     name: [],
     isSold: [],
     price: [],
     image: [],
-    platformID: [{ type: "Required" }],
-    genreID: [{ type: "Required" }],
+    Platform: [],
+    Genre: [],
   };
   const runValidationTasks = async (
     fieldName,
@@ -267,8 +283,8 @@ export default function ProductCreateForm(props) {
     setErrors((errors) => ({ ...errors, [fieldName]: validationResponse }));
     return validationResponse;
   };
-  const fetchPlatformIDRecords = async (value) => {
-    setPlatformIDLoading(true);
+  const fetchPlatformRecords = async (value) => {
+    setPlatformLoading(true);
     const newOptions = [];
     let newNext = "";
     while (newOptions.length < autocompleteLength && newNext != null) {
@@ -287,15 +303,17 @@ export default function ProductCreateForm(props) {
           variables,
         })
       )?.data?.listPlatforms?.items;
-      var loaded = result.filter((item) => platformID !== item.id);
+      var loaded = result.filter(
+        (item) => !PlatformIdSet.has(getIDValue.Platform?.(item))
+      );
       newOptions.push(...loaded);
       newNext = result.nextToken;
     }
-    setPlatformIDRecords(newOptions.slice(0, autocompleteLength));
-    setPlatformIDLoading(false);
+    setPlatformRecords(newOptions.slice(0, autocompleteLength));
+    setPlatformLoading(false);
   };
-  const fetchGenreIDRecords = async (value) => {
-    setGenreIDLoading(true);
+  const fetchGenreRecords = async (value) => {
+    setGenreLoading(true);
     const newOptions = [];
     let newNext = "";
     while (newOptions.length < autocompleteLength && newNext != null) {
@@ -314,16 +332,18 @@ export default function ProductCreateForm(props) {
           variables,
         })
       )?.data?.listGenres?.items;
-      var loaded = result.filter((item) => genreID !== item.id);
+      var loaded = result.filter(
+        (item) => !GenreIdSet.has(getIDValue.Genre?.(item))
+      );
       newOptions.push(...loaded);
       newNext = result.nextToken;
     }
-    setGenreIDRecords(newOptions.slice(0, autocompleteLength));
-    setGenreIDLoading(false);
+    setGenreRecords(newOptions.slice(0, autocompleteLength));
+    setGenreLoading(false);
   };
   React.useEffect(() => {
-    fetchPlatformIDRecords("");
-    fetchGenreIDRecords("");
+    fetchPlatformRecords("");
+    fetchGenreRecords("");
   }, []);
   return (
     <Grid
@@ -338,21 +358,29 @@ export default function ProductCreateForm(props) {
           isSold,
           price,
           image,
-          platformID,
-          genreID,
+          Platform,
+          Genre,
         };
         const validationResponses = await Promise.all(
           Object.keys(validations).reduce((promises, fieldName) => {
             if (Array.isArray(modelFields[fieldName])) {
               promises.push(
                 ...modelFields[fieldName].map((item) =>
-                  runValidationTasks(fieldName, item)
+                  runValidationTasks(
+                    fieldName,
+                    item,
+                    getDisplayValue[fieldName]
+                  )
                 )
               );
               return promises;
             }
             promises.push(
-              runValidationTasks(fieldName, modelFields[fieldName])
+              runValidationTasks(
+                fieldName,
+                modelFields[fieldName],
+                getDisplayValue[fieldName]
+              )
             );
             return promises;
           }, [])
@@ -369,11 +397,19 @@ export default function ProductCreateForm(props) {
               modelFields[key] = null;
             }
           });
+          const modelFieldsToSave = {
+            name: modelFields.name,
+            isSold: modelFields.isSold,
+            price: modelFields.price,
+            image: modelFields.image,
+            platformID: modelFields?.Platform?.id,
+            genreID: modelFields?.Genre?.id,
+          };
           await client.graphql({
             query: createProduct.replaceAll("__typename", ""),
             variables: {
               input: {
-                ...modelFields,
+                ...modelFieldsToSave,
               },
             },
           });
@@ -406,8 +442,8 @@ export default function ProductCreateForm(props) {
               isSold,
               price,
               image,
-              platformID,
-              genreID,
+              Platform,
+              Genre,
             };
             const result = onChange(modelFields);
             value = result?.name ?? value;
@@ -422,21 +458,21 @@ export default function ProductCreateForm(props) {
         hasError={errors.name?.hasError}
         {...getOverrideProps(overrides, "name")}
       ></TextField>
-      <TextField
+      <SwitchField
         label="Is sold"
-        isRequired={false}
-        isReadOnly={false}
-        value={isSold}
+        defaultChecked={false}
+        isDisabled={false}
+        isChecked={isSold}
         onChange={(e) => {
-          let { value } = e.target;
+          let value = e.target.checked;
           if (onChange) {
             const modelFields = {
               name,
               isSold: value,
               price,
               image,
-              platformID,
-              genreID,
+              Platform,
+              Genre,
             };
             const result = onChange(modelFields);
             value = result?.isSold ?? value;
@@ -450,7 +486,7 @@ export default function ProductCreateForm(props) {
         errorMessage={errors.isSold?.errorMessage}
         hasError={errors.isSold?.hasError}
         {...getOverrideProps(overrides, "isSold")}
-      ></TextField>
+      ></SwitchField>
       <TextField
         label="Price"
         isRequired={false}
@@ -468,8 +504,8 @@ export default function ProductCreateForm(props) {
               isSold,
               price: value,
               image,
-              platformID,
-              genreID,
+              Platform,
+              Genre,
             };
             const result = onChange(modelFields);
             value = result?.price ?? value;
@@ -484,35 +520,59 @@ export default function ProductCreateForm(props) {
         hasError={errors.price?.hasError}
         {...getOverrideProps(overrides, "price")}
       ></TextField>
-      <TextField
-        label="Image"
-        isRequired={false}
-        isReadOnly={false}
-        value={image}
-        onChange={(e) => {
-          let { value } = e.target;
-          if (onChange) {
-            const modelFields = {
-              name,
-              isSold,
-              price,
-              image: value,
-              platformID,
-              genreID,
-            };
-            const result = onChange(modelFields);
-            value = result?.image ?? value;
-          }
-          if (errors.image?.hasError) {
-            runValidationTasks("image", value);
-          }
-          setImage(value);
-        }}
-        onBlur={() => runValidationTasks("image", image)}
+      <Field
         errorMessage={errors.image?.errorMessage}
         hasError={errors.image?.hasError}
-        {...getOverrideProps(overrides, "image")}
-      ></TextField>
+        label={"Image"}
+        isRequired={false}
+        isReadOnly={false}
+      >
+        <StorageManager
+          onUploadSuccess={({ key }) => {
+            setImage((prev) => {
+              let value = key;
+              if (onChange) {
+                const modelFields = {
+                  name,
+                  isSold,
+                  price,
+                  image: value,
+                  Platform,
+                  Genre,
+                };
+                const result = onChange(modelFields);
+                value = result?.image ?? value;
+              }
+              return value;
+            });
+          }}
+          onFileRemove={({ key }) => {
+            setImage((prev) => {
+              let value = initialValues?.image;
+              if (onChange) {
+                const modelFields = {
+                  name,
+                  isSold,
+                  price,
+                  image: value,
+                  Platform,
+                  Genre,
+                };
+                const result = onChange(modelFields);
+                value = result?.image ?? value;
+              }
+              return value;
+            });
+          }}
+          processFile={processFile}
+          accessLevel={"private"}
+          acceptedFileTypes={[]}
+          isResumable={false}
+          showThumbnails={true}
+          maxFileCount={1}
+          {...getOverrideProps(overrides, "image")}
+        ></StorageManager>
+      </Field>
       <ArrayField
         lengthLimit={1}
         onChange={async (items) => {
@@ -523,90 +583,78 @@ export default function ProductCreateForm(props) {
               isSold,
               price,
               image,
-              platformID: value,
-              genreID,
+              Platform: value,
+              Genre,
             };
             const result = onChange(modelFields);
-            value = result?.platformID ?? value;
+            value = result?.Platform ?? value;
           }
-          setPlatformID(value);
-          setCurrentPlatformIDValue(undefined);
+          setPlatform(value);
+          setCurrentPlatformValue(undefined);
+          setCurrentPlatformDisplayValue("");
         }}
-        currentFieldValue={currentPlatformIDValue}
-        label={"Platform id"}
-        items={platformID ? [platformID] : []}
-        hasError={errors?.platformID?.hasError}
+        currentFieldValue={currentPlatformValue}
+        label={"Platform"}
+        items={Platform ? [Platform] : []}
+        hasError={errors?.Platform?.hasError}
         runValidationTasks={async () =>
-          await runValidationTasks("platformID", currentPlatformIDValue)
+          await runValidationTasks("Platform", currentPlatformValue)
         }
-        errorMessage={errors?.platformID?.errorMessage}
-        getBadgeText={(value) =>
-          value
-            ? getDisplayValue.platformID(
-                platformIDRecords.find((r) => r.id === value) ??
-                  selectedPlatformIDRecords.find((r) => r.id === value)
-              )
-            : ""
-        }
-        setFieldValue={(value) => {
-          setCurrentPlatformIDDisplayValue(
-            value
-              ? getDisplayValue.platformID(
-                  platformIDRecords.find((r) => r.id === value) ??
-                    selectedPlatformIDRecords.find((r) => r.id === value)
-                )
-              : ""
+        errorMessage={errors?.Platform?.errorMessage}
+        getBadgeText={getDisplayValue.Platform}
+        setFieldValue={(model) => {
+          setCurrentPlatformDisplayValue(
+            model ? getDisplayValue.Platform(model) : ""
           );
-          setCurrentPlatformIDValue(value);
-          const selectedRecord = platformIDRecords.find((r) => r.id === value);
-          if (selectedRecord) {
-            setSelectedPlatformIDRecords([selectedRecord]);
-          }
+          setCurrentPlatformValue(model);
         }}
-        inputFieldRef={platformIDRef}
+        inputFieldRef={PlatformRef}
         defaultFieldValue={""}
       >
         <Autocomplete
-          label="Platform id"
-          isRequired={true}
+          label="Platform"
+          isRequired={false}
           isReadOnly={false}
           placeholder="Search Platform"
-          value={currentPlatformIDDisplayValue}
-          options={platformIDRecords
-            .filter(
-              (r, i, arr) =>
-                arr.findIndex((member) => member?.id === r?.id) === i
-            )
+          value={currentPlatformDisplayValue}
+          options={platformRecords
+            .filter((r) => !PlatformIdSet.has(getIDValue.Platform?.(r)))
             .map((r) => ({
-              id: r?.id,
-              label: getDisplayValue.platformID?.(r),
+              id: getIDValue.Platform?.(r),
+              label: getDisplayValue.Platform?.(r),
             }))}
-          isLoading={platformIDLoading}
+          isLoading={PlatformLoading}
           onSelect={({ id, label }) => {
-            setCurrentPlatformIDValue(id);
-            setCurrentPlatformIDDisplayValue(label);
-            runValidationTasks("platformID", label);
+            setCurrentPlatformValue(
+              platformRecords.find((r) =>
+                Object.entries(JSON.parse(id)).every(
+                  ([key, value]) => r[key] === value
+                )
+              )
+            );
+            setCurrentPlatformDisplayValue(label);
+            runValidationTasks("Platform", label);
           }}
           onClear={() => {
-            setCurrentPlatformIDDisplayValue("");
+            setCurrentPlatformDisplayValue("");
           }}
           onChange={(e) => {
             let { value } = e.target;
-            fetchPlatformIDRecords(value);
-            if (errors.platformID?.hasError) {
-              runValidationTasks("platformID", value);
+            fetchPlatformRecords(value);
+            if (errors.Platform?.hasError) {
+              runValidationTasks("Platform", value);
             }
-            setCurrentPlatformIDDisplayValue(value);
-            setCurrentPlatformIDValue(undefined);
+            setCurrentPlatformDisplayValue(value);
+            setCurrentPlatformValue(undefined);
           }}
           onBlur={() =>
-            runValidationTasks("platformID", currentPlatformIDValue)
+            runValidationTasks("Platform", currentPlatformDisplayValue)
           }
-          errorMessage={errors.platformID?.errorMessage}
-          hasError={errors.platformID?.hasError}
-          ref={platformIDRef}
+          errorMessage={errors.Platform?.errorMessage}
+          hasError={errors.Platform?.hasError}
+          ref={PlatformRef}
           labelHidden={true}
-          {...getOverrideProps(overrides, "platformID")}
+          {...getOverrideProps(overrides, "Platform")}
         ></Autocomplete>
       </ArrayField>
       <ArrayField
@@ -619,88 +667,76 @@ export default function ProductCreateForm(props) {
               isSold,
               price,
               image,
-              platformID,
-              genreID: value,
+              Platform,
+              Genre: value,
             };
             const result = onChange(modelFields);
-            value = result?.genreID ?? value;
+            value = result?.Genre ?? value;
           }
-          setGenreID(value);
-          setCurrentGenreIDValue(undefined);
+          setGenre(value);
+          setCurrentGenreValue(undefined);
+          setCurrentGenreDisplayValue("");
         }}
-        currentFieldValue={currentGenreIDValue}
-        label={"Genre id"}
-        items={genreID ? [genreID] : []}
-        hasError={errors?.genreID?.hasError}
+        currentFieldValue={currentGenreValue}
+        label={"Genre"}
+        items={Genre ? [Genre] : []}
+        hasError={errors?.Genre?.hasError}
         runValidationTasks={async () =>
-          await runValidationTasks("genreID", currentGenreIDValue)
+          await runValidationTasks("Genre", currentGenreValue)
         }
-        errorMessage={errors?.genreID?.errorMessage}
-        getBadgeText={(value) =>
-          value
-            ? getDisplayValue.genreID(
-                genreIDRecords.find((r) => r.id === value) ??
-                  selectedGenreIDRecords.find((r) => r.id === value)
-              )
-            : ""
-        }
-        setFieldValue={(value) => {
-          setCurrentGenreIDDisplayValue(
-            value
-              ? getDisplayValue.genreID(
-                  genreIDRecords.find((r) => r.id === value) ??
-                    selectedGenreIDRecords.find((r) => r.id === value)
-                )
-              : ""
+        errorMessage={errors?.Genre?.errorMessage}
+        getBadgeText={getDisplayValue.Genre}
+        setFieldValue={(model) => {
+          setCurrentGenreDisplayValue(
+            model ? getDisplayValue.Genre(model) : ""
           );
-          setCurrentGenreIDValue(value);
-          const selectedRecord = genreIDRecords.find((r) => r.id === value);
-          if (selectedRecord) {
-            setSelectedGenreIDRecords([selectedRecord]);
-          }
+          setCurrentGenreValue(model);
         }}
-        inputFieldRef={genreIDRef}
+        inputFieldRef={GenreRef}
         defaultFieldValue={""}
       >
         <Autocomplete
-          label="Genre id"
-          isRequired={true}
+          label="Genre"
+          isRequired={false}
           isReadOnly={false}
           placeholder="Search Genre"
-          value={currentGenreIDDisplayValue}
-          options={genreIDRecords
-            .filter(
-              (r, i, arr) =>
-                arr.findIndex((member) => member?.id === r?.id) === i
-            )
+          value={currentGenreDisplayValue}
+          options={genreRecords
+            .filter((r) => !GenreIdSet.has(getIDValue.Genre?.(r)))
             .map((r) => ({
-              id: r?.id,
-              label: getDisplayValue.genreID?.(r),
+              id: getIDValue.Genre?.(r),
+              label: getDisplayValue.Genre?.(r),
             }))}
-          isLoading={genreIDLoading}
+          isLoading={GenreLoading}
           onSelect={({ id, label }) => {
-            setCurrentGenreIDValue(id);
-            setCurrentGenreIDDisplayValue(label);
-            runValidationTasks("genreID", label);
+            setCurrentGenreValue(
+              genreRecords.find((r) =>
+                Object.entries(JSON.parse(id)).every(
+                  ([key, value]) => r[key] === value
+                )
+              )
+            );
+            setCurrentGenreDisplayValue(label);
+            runValidationTasks("Genre", label);
           }}
           onClear={() => {
-            setCurrentGenreIDDisplayValue("");
+            setCurrentGenreDisplayValue("");
           }}
           onChange={(e) => {
             let { value } = e.target;
-            fetchGenreIDRecords(value);
-            if (errors.genreID?.hasError) {
-              runValidationTasks("genreID", value);
+            fetchGenreRecords(value);
+            if (errors.Genre?.hasError) {
+              runValidationTasks("Genre", value);
             }
-            setCurrentGenreIDDisplayValue(value);
-            setCurrentGenreIDValue(undefined);
+            setCurrentGenreDisplayValue(value);
+            setCurrentGenreValue(undefined);
           }}
-          onBlur={() => runValidationTasks("genreID", currentGenreIDValue)}
-          errorMessage={errors.genreID?.errorMessage}
-          hasError={errors.genreID?.hasError}
-          ref={genreIDRef}
+          onBlur={() => runValidationTasks("Genre", currentGenreDisplayValue)}
+          errorMessage={errors.Genre?.errorMessage}
+          hasError={errors.Genre?.hasError}
+          ref={GenreRef}
           labelHidden={true}
-          {...getOverrideProps(overrides, "genreID")}
+          {...getOverrideProps(overrides, "Genre")}
         ></Autocomplete>
       </ArrayField>
       <Flex
